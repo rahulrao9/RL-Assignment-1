@@ -238,7 +238,7 @@ def full_argmax(x):
 
 def test():
     # Hyperparameters
-    n_test_steps = 25
+    n_test_steps = 50
     step_pause = 0.5
     
     # Initialize environment and Q-array
