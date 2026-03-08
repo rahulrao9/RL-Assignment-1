@@ -76,12 +76,13 @@ def experiment():
         s_next, r, done = env.step(a)
         env.render(Q_sa=QIagent.Q_sa,plot_optimal_policy=True,step_pause=0.5)
         s = s_next
-
+    
     # TO DO: Compute mean reward per timestep under the optimal policy
     s_start = env.reset()
     V = np.max(QIagent.Q_sa[s_start])
     N = 101 - V
     mean_reward_per_timestep = V/N
+    print("Total expected return for the optimal policy: {}".format(V))
     print("Mean reward per timestep under optimal policy: {}".format(mean_reward_per_timestep))
     
 if __name__ == '__main__':
