@@ -13,8 +13,11 @@ from Agent import BaseAgent
 class SarsaAgent(BaseAgent):
         
     def update(self,s,a,r,s_next,a_next,done):
-        # TO DO: Add own code
-        pass
+        if done:
+            target = r                                               
+        else:
+            target = r + self.gamma * self.Q_sa[s_next, a_next]
+        self.Q_sa[s, a] += self.learning_rate * (target - self.Q_sa[s, a])
 
         
 def sarsa(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None, temp=None, plot=True, eval_interval=500):
@@ -27,7 +30,26 @@ def sarsa(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None, tem
     eval_timesteps = []
     eval_returns = []
 
-    # TO DO: Write your SARSA algorithm here!
+    s = env.reset()       
+    a = pi.select_action(s, policy, epsilon, temp)   
+
+    for t in range(n_timesteps):
+
+        if t % eval_interval == 0:
+            mean_return = pi.evaluate(eval_env)       
+            eval_returns.append(mean_return)
+            eval_timesteps.append(t)
+        s_next, r, done = env.step(a)
+
+        if done:
+            pi.update(s, a, r, s_next, None, done)
+            s = env.reset()
+            a = pi.select_action(s, policy, epsilon, temp)
+        else:
+            a_next = pi.select_action(s_next, policy, epsilon, temp)
+            pi.update(s, a, r, s_next, a_next, done)
+            s = s_next
+            a = a_next
     
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during SARSA execution
