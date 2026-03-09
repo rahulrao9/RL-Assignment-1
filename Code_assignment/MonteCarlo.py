@@ -13,20 +13,13 @@ from Agent import BaseAgent
 class MonteCarloAgent(BaseAgent):
         
     def update(self, states, actions, rewards):
-        ''' states is a list of states observed in the episode, of length T_ep + 1 (last state is appended)
-        actions is a list of actions observed in the episode, of length T_ep
-        rewards is a list of rewards observed in the episode, of length T_ep
-        done indicates whether the final s in states is was a terminal state '''
-        
         G = 0.0
-    
         for t in reversed(range(len(rewards))):
             G = rewards[t] + self.gamma * G
             s = states[t]
             a = actions[t]
             
-            if (s, a) not in [(states[i], actions[i]) for i in range(0, t)]:
-                self.Q_sa[s, a] += self.learning_rate * (G - self.Q_sa[s, a])
+            self.Q_sa[s, a] += self.learning_rate * (G - self.Q_sa[s, a])
 
 def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma, 
                    policy='egreedy', epsilon=None, temp=None, plot=True, eval_interval=500):
@@ -54,12 +47,9 @@ def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma,
         actions.append(a)
         rewards.append(r)
         states.append(s_next)
-        
-        if plot:
-           env.render(Q_sa=pi.Q_sa, plot_optimal_policy=True, step_pause=0.001)
            
         if done or len(actions) == max_episode_length:
-            pi.update(states, actions, rewards)
+            pi.update(states, actions, rewards)            
             s = env.reset()
             states = [s]
             actions = []
@@ -67,11 +57,13 @@ def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma,
         else:
             s = s_next
 
-    return np.array(eval_returns), np.array(eval_timesteps) 
-    
+        if plot:
+            env.render(Q_sa=pi.Q_sa, plot_optimal_policy=True, step_pause=0.1)
+
+    return np.array(eval_returns), np.array(eval_timesteps)
 def test():
     n_timesteps = 100000
-    max_episode_length = 1000
+    max_episode_length = 100
     gamma = 1.0
     learning_rate = 0.01
 

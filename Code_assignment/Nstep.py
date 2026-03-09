@@ -26,9 +26,8 @@ class NstepQLearningAgent(BaseAgent):
             self.Q_sa[states[t], actions[t]] += self.learning_rate * (target - self.Q_sa[states[t], actions[t]])
             
 def n_step_Q(n_timesteps, max_episode_length, learning_rate, gamma, 
-                   policy='egreedy', epsilon=None, temp=None, plot=True, n=5, eval_interval=500):
-    ''' runs a single repetition of an MC rl agent
-    Return: rewards, a vector with the observed rewards at each timestep ''' 
+                   policy='egreedy', epsilon=None, temp=None, plot=False, n=5, eval_interval=500):
+    ''' runs a single repetition of an n-step Q-learning agent ''' 
     
     env = StochasticWindyGridworld(initialize_model=False)
     eval_env = StochasticWindyGridworld(initialize_model=False)
@@ -36,45 +35,43 @@ def n_step_Q(n_timesteps, max_episode_length, learning_rate, gamma,
     eval_timesteps = []
     eval_returns = []
 
-    t=0
+    t = 0
     while t < n_timesteps:
-        if t % eval_interval == 0:
-            mean_return = pi.evaluate(eval_env)       
-            eval_returns.append(mean_return)
-            eval_timesteps.append(t)
-                
-        s = env.reset()           
-        states  = [s]             
-        actions = []              
-        rewards = []             
+        s = env.reset()            
+        states  = [s]              
+        actions = []               
+        rewards = []              
         done = False              
 
         for _ in range(max_episode_length):
+            if t >= n_timesteps:
+                break
+                
+            if t % eval_interval == 0:
+                mean_return = pi.evaluate(eval_env)        
+                eval_returns.append(mean_return)
+                eval_timesteps.append(t)
+            
             a = pi.select_action(s, policy, epsilon, temp)   
             s_next, r, done = env.step(a)
+            if plot:
+                env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during n-step Q-learning execution
             actions.append(a)
             rewards.append(r)
             states.append(s_next)
+            
             t += 1
-
-            if t % eval_interval == 0 and t < n_timesteps:
-                mean_return = pi.evaluate(eval_env)
-                eval_returns.append(mean_return)
-                eval_timesteps.append(t)
-
+            
             if done:
                 break
-            s = s_next
-            
-        pi.update(states, actions, rewards, done, n)
-    
-    # if plot:
-    #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during n-step Q-learning execution
+                
+            s = s_next            
+        pi.update(states, actions, rewards, done, n)                
         
-    return np.array(eval_returns), np.array(eval_timesteps) 
+    return np.array(eval_returns), np.array(eval_timesteps)
 
 def test():
-    n_timesteps = 10000
+    n_timesteps = 15000
     max_episode_length = 100
     gamma = 1.0
     learning_rate = 0.1
