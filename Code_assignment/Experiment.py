@@ -44,7 +44,7 @@ def average_over_repetitions(backup, n_repetitions, n_timesteps, max_episode_len
 def experiment(args):
     ####### Settings
     n_repetitions = args.n_repetitions
-    smoothing_window = 35 # Must be an odd number. Use 'None' to switch smoothing off!
+    smoothing_window = args.smoothing # Must be an odd number. Use 'None' to switch smoothing off!
     plot = args.plot # Plotting is very slow, switch it off when we run repetitions
     
     # MDP    
@@ -135,6 +135,7 @@ def experiment(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run Tabular RL Experiments')
     parser.add_argument('--n_repetitions', type=int, default=20, help='Number of repetitions per experiment')
+    parser.add_argument('--smoothing', type=int, default=27, help='Smoothing window size')
     parser.add_argument('--n_timesteps', type=int, default=50001, help='Total timesteps per run')
     parser.add_argument('--eval_interval', type=int, default=1000, help='Interval between evaluations')
     parser.add_argument('--plot', action='store_true', help='Toggle environment rendering on')
